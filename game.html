@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy perv jesus's friend day Ell<3</title>
+    <style>
+        body {
+            text-align: center;
+            background-color: #f8f0fa;
+            font-family: 'Poppins', sans-serif;
+            color: #b45f8c;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100vh;
+            margin: 0;
+            padding-top: 20px;
+        }
+        h1 {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        #gameContainer {
+            position: relative;
+            width: 1200px;
+            height: 700px;
+            display: none;
+        }
+        #bottle {
+            display: block;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        canvas {
+            background-color: transparent;
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+        }
+        #message {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-top: 20px;
+            color: #ff4081;
+            display: none;
+        }
+        .message-box {
+            width: 300px;
+            padding: 15px;
+            background-color: #d3a3c3;
+            color: #fff;
+            font-size: 1.2em;
+            border-radius: 10px;
+            margin: 10px;
+            display: inline-block;
+            text-align: center;
+        }
+        #startButton {
+            font-size: 1.5em;
+            padding: 10px 20px;
+            background-color: #ff69b4;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        #startButton:hover {
+            background-color: #d45292;
+        }
+        a {
+            color: #ff4081;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>Help Walter collect heart pieces</h1>
+
+    <button id="startButton">Start Game</button>
+
+    <audio id="backgroundMusic" loop>
+        <source src="music.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <div class="message-box" style="position:absolute; left:10px; top:50%; transform:translateY(-50%);">
+        Some of these hearts may be out of the fish bowl because of my overflowing affection for you and not just because I'm bad at coding.
+    </div>
+    <div class="message-box" style="position:absolute; right:10px; top:50%; transform:translateY(-50%);">
+        I remembered your game idea ik this is not even close to that :( but I tried to make something cool out of it, solve to win some booty (sex joke).
+    </div>
+
+    <div id="gameContainer">
+        <img id="bottle" src="dbcd240-5eaa2ee1-e8ca-4642-9bbc-3a9f59b8762a.gif">
+        <canvas id="gameCanvas" width="1200" height="700"></canvas>
+    </div>
+
+    <p id="message">You win! I won more coz I get to be yours here's your treasure(?)
+        <a href="https://open.spotify.com/playlist/2ImPeAmnjT90MC17bFOBzM?si=644b1f8ab2fc4390" target="_blank">Spotify Playlist</a> | 
+        <a href="https://docs.google.com/document/d/1cuCYiZ7082VNSLNYXRmID8pWsh2XbY99aqr2rdqHjto/edit?usp=sharing" target="_blank">Rap/Weird Cringish Poem</a> | 
+        <a href="#">Origami Art</a>
+    </p>
+    <p id="timer" style="font-size: 1.5em; color: #ff0000; margin-top: 10px;"></p>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const message = document.getElementById("message");
+        const timerDisplay = document.getElementById("timer");
+        const playerImg = new Image();
+        playerImg.src = "Subject.png";
+
+        const gameContainer = document.getElementById("gameContainer");
+        const startButton = document.getElementById("startButton");
+        const backgroundMusic = document.getElementById("backgroundMusic");
+
+        let player = { x: 550, y: 450, width: 78, height: 78, speed: 8 };
+        const bottleBounds = { x: 255, y: 105, width: 690, height: 490 };
+        let seeds = Array.from({ length: 10 }, () => ({ 
+            x: Math.random() * (bottleBounds.width - 20) + bottleBounds.x + 10, 
+            y: Math.random() * (bottleBounds.height - 20) + bottleBounds.y + 10, 
+            collected: false 
+        }));
+        let keys = {};
+        let timeLeft = 10;
+        let gameWon = false;
+        let timerInterval;
+
+        document.addEventListener("keydown", event => keys[event.key] = true);
+        document.addEventListener("keyup", event => keys[event.key] = false);
+
+        function movePlayer() {
+            if (keys["ArrowLeft"] && player.x > bottleBounds.x) player.x -= player.speed;
+            if (keys["ArrowRight"] && player.x < bottleBounds.x + bottleBounds.width - player.width) player.x += player.speed;
+            if (keys["ArrowUp"] && player.y > bottleBounds.y) player.y -= player.speed;
+            if (keys["ArrowDown"] && player.y < bottleBounds.y + bottleBounds.height - player.height) player.y += player.speed;
+        }
+
+        function checkCollisions() {
+            seeds.forEach(seed => {
+                if (!seed.collected && player.x < seed.x + 20 && player.x + 78 > seed.x && player.y < seed.y + 20 && player.y + 78 > seed.y) {
+                    seed.collected = true;
+                }
+            });
+
+            if (seeds.every(seed => seed.collected)) {
+                gameWon = true;
+                message.style.display = "block";
+                clearInterval(timerInterval);
+                timerDisplay.textContent = "Time left: 0s";
+            }
+        }
+
+        function startTimer() {
+            timerDisplay.textContent = `Time left: ${timeLeft}s`;
+            timerInterval = setInterval(() => {
+                if (!gameWon) {
+                    timeLeft--;
+                    timerDisplay.textContent = `Time left: ${Math.max(timeLeft, 0)}s`;
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        alert("Time's up! Try again.");
+                        location.reload();
+                    }
+                }
+            }, 1000);
+        }
+
+        function drawGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            movePlayer();
+            checkCollisions();
+            ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
+            seeds.forEach(seed => {
+                if (!seed.collected) {
+                    ctx.fillStyle = "#ff69b4";
+                    ctx.font = "20px Arial";
+                    ctx.fillText("❤️", seed.x, seed.y);
+                }
+            });
+            requestAnimationFrame(drawGame);
+        }
+
+        startButton.addEventListener("click", () => {
+            gameContainer.style.display = "block";
+            startButton.style.display = "none";
+            backgroundMusic.play();
+            startTimer();
+            drawGame();
+        });
+    </script>
+</body>
+</html>
